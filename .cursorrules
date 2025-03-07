@@ -1,0 +1,233 @@
+# .cursorrules
+#
+# This file provides context and conventions for AI-assisted coding in Cursor.
+# Place this file in the root of your project so the AI can generate
+# code aligned with your project's structure and best practices.
+
+###############################################################################
+# 1. Project Overview
+###############################################################################
+Project Name: PixelSeek
+
+This project is a multi-tier web application designed to enable users to find the exact image or video they need. It includes:
+- A React-based front end (SPA) with PrimeReact as the main UI component library.
+- A Django back end (using Django REST Framework) for business logic and APIs.
+- MongoDB for primary data storage.
+- Weaviate as a vector database for semantic search and advanced querying.
+- SEO is a current priority to ensure high discoverability.
+- Production deployment on Google Cloud Platform (GCP) using Cloud Run for both frontend and backend.
+
+Key functionalities include:
+- SSO for user authentication (e.g., Google, other providers).
+- CRUD operations for user-generated content.
+- Integration with Weaviate for vector-based search or recommendations.
+
+###############################################################################
+# 2. Component Versions
+###############################################################################
+Frontend:
+   - React: 18.2.0
+   - PrimeReact: 8.5.0 (stable release)
+   - React Router: 6.8.2
+   - Redux Toolkit (or alternative state management): 1.9.3
+   - Node.js (for development/build): 18.x LTS
+
+Backend:
+   - Python: 3.10.x (stable)
+   - Django: 4.2 LTS
+   - Django REST Framework: 3.14.0
+
+Databases:
+   - MongoDB: 6.0 (stable)
+   - Weaviate: 1.17.0 (stable)
+
+Other Tools:
+   - Docker & docker-compose: Latest stable releases suitable for development and Cloud Run deployment.
+   - GCP Cloud Run: Use the latest supported configurations for container deployment.
+
+###############################################################################
+# 3. General Guidelines
+###############################################################################
+- Follow a clear, modular architecture: separate concerns between front end, back end, and databases.
+- Use environment variables for all secrets (e.g., database URIs, API keys).
+- Keep all credentials out of version control.
+- Favor readable, self-documenting code with consistent naming conventions.
+
+###############################################################################
+# 4. Frontend (React + PrimeReact)
+###############################################################################
+1) Framework & Syntax:
+   - Use React (v18.2.0) with functional components and React Hooks.
+   - Prefer TypeScript if possible; if using JavaScript, utilize PropTypes and/or JSDoc.
+   - Leverage PrimeReact (v8.5.0) for UI components like forms, tables, dialogs, etc.
+
+2) State Management & Routing:
+   - Use React Router (v6.8.2) for client-side routing.
+   - Use Redux Toolkit (v1.9.3) or an equivalent library if state management becomes complex.
+
+3) Styling & Theming:
+   - Choose a consistent PrimeReact theme and maintain it across the app.
+   - Keep styles modular and avoid large global style sheets; follow PrimeReact theming best practices.
+
+4) SEO Implementation:
+   - Implement Server-Side Rendering (SSR) or Static Site Generation (SSG) (e.g., with Next.js) to boost SEO.
+   - Utilize meta tags, dynamic page titles, and structured data (JSON-LD) to enhance search engine visibility.
+   - Use tools such as `react-helmet` (or Next.js equivalents) to manage document head updates.
+   - Ensure URL routing is SEO-friendly (human-readable paths, proper redirects, etc.).
+   - Generate and submit an XML sitemap to search engines.
+
+5) Performance:
+   - Apply code splitting and lazy loading for routes and heavy components.
+   - Use `React.memo` or hooks such as `useMemo`/`useCallback` to optimize performance-sensitive components.
+   - Monitor bundle size and leverage dynamic imports for large libraries.
+
+6) Testing & Quality:
+   - Use Jest + React Testing Library for unit and integration tests.
+   - Maintain a minimum coverage threshold (e.g., 80%).
+   - Enforce consistent code style with ESLint and Prettier.
+
+###############################################################################
+# 5. Backend (Django)
+###############################################################################
+1) Framework & Structure:
+   - Use Django (4.2 LTS) with Django REST Framework (v3.14.0) for building RESTful APIs.
+   - Organize code into logical apps (e.g., `users`, `core`, `api`).
+   - Ensure clear separation between models, serializers, views, and URL configurations.
+
+2) Authentication & SSO:
+   - Configure OAuth-based SSO (e.g., via `django-allauth` or custom OAuth flows).
+   - Securely store user sessions or JWT tokens (consider libraries such as `django-rest-auth` or `djoser`).
+
+3) ORM & Data Access:
+   - Connect to MongoDB using an ODM like PyMongo, MongoEngine, or Djongo (for partial Django ORM support).
+   - For any relational data or caching layers, segregate them in separate apps or services.
+
+4) API Structure:
+   - Utilize DRF’s ViewSets or APIView classes for endpoint design.
+   - Implement comprehensive pagination, filtering, and search functionalities.
+
+5) Testing & Quality:
+   - Use Django’s built-in test framework or Pytest.
+   - Write integration tests covering success and error cases.
+   - Ensure a minimum coverage threshold (e.g., 80%).
+
+###############################################################################
+# 6. Databases
+###############################################################################
+1) MongoDB:
+   - Use MongoDB version 6.0 for reliable, stable performance.
+   - Leverage an ODM (e.g., PyMongo, MongoEngine, or Djongo) and define indexes for commonly queried fields.
+   - Validate schemas via your ODM or through DRF serializers.
+
+2) Weaviate (Vector DB):
+   - Use the official Weaviate client for connecting from Django.
+   - Use Weaviate version 1.17.0 to store and query embeddings for semantic search.
+   - Carefully configure schema classes and properties for optimal search performance.
+   - Keep Weaviate credentials (URL, API key) secure in environment variables.
+
+3) Environment & Security:
+   - Store all database URIs and credentials in `.env` or environment variables.
+   - Do not commit sensitive files to version control.
+
+###############################################################################
+# 7. File & Folder Structure
+###############################################################################
+Proposed structure (adapt as needed):
+.
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── redux/ (or store/ if using Redux Toolkit)
+│   │   ├── App.tsx (or App.jsx)
+│   │   └── index.tsx
+│   ├── public/
+│   ├── package.json
+│   └── ...
+├── backend/
+│   ├── manage.py
+│   ├── projectname/
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── wsgi.py
+│   │   ├── asgi.py
+│   │   └── ...
+│   ├── api/
+│   │   ├── views.py
+│   │   ├── serializers.py
+│   │   └── urls.py
+│   ├── requirements.txt (or Pipfile/poetry.lock)
+│   └── ...
+├── docker-compose.yml
+├── .env
+└── .cursorrules
+
+###############################################################################
+# 8. Testing Strategy
+###############################################################################
+1) Frontend:
+   - Use Jest + React Testing Library for unit and integration tests.
+   - Write snapshot tests for critical UI components.
+   - Aim for 80%+ code coverage.
+
+2) Backend:
+   - Utilize Django’s test framework or Pytest for testing.
+   - Write integration tests for each endpoint (covering both success and error scenarios).
+   - Where possible, mock external services (e.g., Weaviate, MongoDB) to speed up tests.
+
+3) CI/CD Integration:
+   - Automate tests within your CI pipeline (e.g., GitHub Actions, GitLab CI, CircleCI).
+   - Fail builds if coverage drops below the established threshold.
+
+###############################################################################
+# 9. Error Handling & Logging
+###############################################################################
+- Employ structured logging in both frontend and backend (e.g., console logs during development, external log aggregators in production).
+- In React, implement an Error Boundary component for unexpected UI errors.
+- In Django, use middleware or DRF exception handlers for consistent error responses.
+- Log critical errors to a monitoring service (e.g., Sentry).
+
+###############################################################################
+# 10. Security & Performance
+###############################################################################
+1) Security:
+   - Enforce HTTPS in production.
+   - Use secure cookies and CSRF protection where applicable.
+   - Keep all secrets out of source code; use environment variables or secret managers.
+   - Sanitize and validate all user input.
+
+2) Performance:
+   - Cache frequently accessed data (using Redis or Django’s caching mechanisms).
+   - Use indexes in MongoDB for high-traffic queries.
+   - Design Weaviate vector schemas carefully to optimize search performance.
+   - Minimize the React bundle size via lazy loading and tree shaking.
+
+###############################################################################
+# 11. Documentation
+###############################################################################
+- Maintain a primary README.md at the project root with setup and usage instructions.
+- For the backend, consider auto-generating API docs (e.g., using DRF’s schema_view or Swagger/OpenAPI).
+- Use docstrings in Python and JSDoc/TypeScript types in React.
+- Provide examples for all major endpoints and data models.
+
+###############################################################################
+# 12. Deployment
+###############################################################################
+1) Google Cloud Platform (GCP):
+   - Deploy the production environment on Cloud Run for both frontend and backend.
+   - Create separate Docker images for each service.
+   - Ensure each container can run independently (e.g., using a Node.js server for React or serving static files appropriately).
+   - Store and manage secrets using GCP Secret Manager or environment variables in Cloud Run.
+
+2) Dockerization:
+   - Use Docker and docker-compose for local development, defining services for frontend, backend, MongoDB, and Weaviate.
+   - For production, build Docker images for each service and deploy them to Cloud Run.
+   - Ensure that environment variables are correctly configured in production.
+
+3) Monitoring & Logging:
+   - Integrate with GCP’s logging and monitoring services (e.g., Cloud Logging, Cloud Monitoring).
+   - Configure logging in Django and React to output structured logs for better observability.
+
+###############################################################################
+# END OF .CURSORULES
+###############################################################################
