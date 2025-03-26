@@ -164,3 +164,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Weaviate configuration
 WEAVIATE_URL = os.environ.get('WEAVIATE_URL', 'http://localhost:8080')
 WEAVIATE_API_KEY = os.environ.get('WEAVIATE_API_KEY', '')
+
+# Celery configuration
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
