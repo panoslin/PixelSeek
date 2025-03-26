@@ -6,10 +6,12 @@ from io import BytesIO
 import base64
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import CLIPProcessor, CLIPModel
 import uvicorn
 from typing import List, Optional, Union
 import time
+import sys
+import cn_clip.clip as clip
+from cn_clip.clip import load_from_name, available_models
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -23,14 +25,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load Chinese-CLIP model
-MODEL_NAME = "OFA-Sys/chinese-clip-vit-base-patch16"
-model = CLIPModel.from_pretrained(MODEL_NAME)
-processor = CLIPProcessor.from_pretrained(MODEL_NAME)
+# Use environment variable or default to RN50 model
+MODEL_NAME = os.environ.get("CLIP_MODEL_NAME", "RN50")
+assert MODEL_NAME in available_models(), f"Model {MODEL_NAME} not found in available models: {available_models()}"
 
-# Move model to GPU if available
+# Load CN-CLIP model
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model.to(device)
+model, preprocess = load_from_name(MODEL_NAME, device=device)
 
 @app.get("/")
 def read_root():
@@ -40,16 +41,13 @@ def read_root():
 async def vectorize_text(text: List[str] = Form(...)):
     start_time = time.time()
     
-    # Preprocess text
-    inputs = processor(text=text, return_tensors="pt", padding=True, truncation=True)
-    inputs = {k: v.to(device) for k, v in inputs.items()}
-    
-    # Get text embeddings
+    # Tokenize and encode text
     with torch.no_grad():
-        text_outputs = model.get_text_features(**inputs)
+        text_tokens = clip.tokenize(text).to(device)
+        text_features = model.encode_text(text_tokens)
         
     # Convert to numpy and normalize
-    embeddings = text_outputs.cpu().numpy()
+    embeddings = text_features.cpu().numpy()
     embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
     
     processing_time = time.time() - start_time
@@ -65,22 +63,22 @@ async def vectorize_image(images: List[UploadFile] = File(...)):
     start_time = time.time()
     
     # Load and preprocess images
-    pil_images = []
+    processed_images = []
     for image_file in images:
         content = await image_file.read()
         pil_image = Image.open(BytesIO(content)).convert("RGB")
-        pil_images.append(pil_image)
+        processed_image = preprocess(pil_image)
+        processed_images.append(processed_image)
     
-    # Process images
-    inputs = processor(images=pil_images, return_tensors="pt", padding=True)
-    inputs = {k: v.to(device) for k, v in inputs.items()}
+    # Stack images into a batch
+    image_input = torch.stack(processed_images).to(device)
     
     # Get image embeddings
     with torch.no_grad():
-        image_outputs = model.get_image_features(**inputs)
+        image_features = model.encode_image(image_input)
     
     # Convert to numpy and normalize
-    embeddings = image_outputs.cpu().numpy()
+    embeddings = image_features.cpu().numpy()
     embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
     
     processing_time = time.time() - start_time
@@ -96,22 +94,22 @@ async def vectorize_base64(image_base64: List[str] = Form(...)):
     start_time = time.time()
     
     # Decode base64 images
-    pil_images = []
+    processed_images = []
     for b64_str in image_base64:
         img_data = base64.b64decode(b64_str)
         pil_image = Image.open(BytesIO(img_data)).convert("RGB")
-        pil_images.append(pil_image)
+        processed_image = preprocess(pil_image)
+        processed_images.append(processed_image)
     
-    # Process images
-    inputs = processor(images=pil_images, return_tensors="pt", padding=True)
-    inputs = {k: v.to(device) for k, v in inputs.items()}
+    # Stack images into a batch
+    image_input = torch.stack(processed_images).to(device)
     
     # Get image embeddings
     with torch.no_grad():
-        image_outputs = model.get_image_features(**inputs)
+        image_features = model.encode_image(image_input)
     
     # Convert to numpy and normalize
-    embeddings = image_outputs.cpu().numpy()
+    embeddings = image_features.cpu().numpy()
     embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
     
     processing_time = time.time() - start_time

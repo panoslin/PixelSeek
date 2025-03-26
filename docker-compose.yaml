@@ -40,15 +40,18 @@ services:
 
   # Chinese-CLIP vectorizer module
   chinese-clip-module:
-    image: semitechnologies/custom-module:chinese-clip
     build:
       context: ./chinese-clip
       dockerfile: Dockerfile
     container_name: ${CONTAINER_CLIP}
     environment:
+      CLIP_MODEL_NAME: ${CLIP_MODEL_NAME}
       ENABLE_CUDA: ${CLIP_CUDA_ENABLED}
+    restart: always
     networks:
       - pixelseek-network
+    volumes:
+      - chinese_clip_cache:/root/.cache/clip  # Cache for downloaded models
 
   # Redis for Celery
   redis:
@@ -122,6 +125,7 @@ volumes:
   weaviate_data:
   redis_data:
   media_data:
+  chinese_clip_cache:
 
 networks:
   pixelseek-network:
