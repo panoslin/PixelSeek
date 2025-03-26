@@ -1,11 +1,11 @@
 # For development:
 ```bash
-docker compose --env-file .env up
+docker compose --env-file .env up -d
 ```
 
 # For production:
 ```bash
-docker compose --env-file .env.prod up
+docker compose --env-file .env.prod up -d
 ```
 
 # Down
