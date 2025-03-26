@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Load environment variables from .env file
 load_dotenv()
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third-party apps
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     # Local apps
     'users',
@@ -99,11 +101,17 @@ import mongoengine
 MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/pixelseek')
 mongoengine.connect(host=MONGODB_URI)
 
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'users.auth.MongoEngineBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # Rest Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'users.auth.MongoEngineJWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -112,8 +120,35 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
+# JWT Settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+}
+
 # CORS settings
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
+CORS_ALLOW_CREDENTIALS = True
+
+# SSO Settings
+GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '')
+GOOGLE_OAUTH_SECRET = os.environ.get('GOOGLE_OAUTH_SECRET', '')
+GOOGLE_OAUTH_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH_REDIRECT_URI', 'http://localhost:8000/api/users/auth/google/callback')
+
+WECHAT_OAUTH_APP_ID = os.environ.get('WECHAT_OAUTH_APP_ID', '')
+WECHAT_OAUTH_SECRET = os.environ.get('WECHAT_OAUTH_SECRET', '')
+WECHAT_OAUTH_REDIRECT_URI = os.environ.get('WECHAT_OAUTH_REDIRECT_URI', 'http://localhost:8000/api/users/auth/wechat/callback')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -173,3 +208,43 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# Authentication Backend (for MongoDB)
+MONGOENGINE_USERNAME_FIELD = 'email'
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': os.environ.get('LOG_LEVEL', 'DEBUG'),
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': os.environ.get('LOG_LEVEL', 'INFO'),
+            'class': 'logging.FileHandler',
+            'filename': os.environ.get('LOG_FILE', '/tmp/pixelseek.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'users': {
+            'handlers': ['console', 'file'],
+            'level': os.environ.get('LOG_LEVEL', 'DEBUG'),
+            'propagate': False,
+        },
+    },
+}
