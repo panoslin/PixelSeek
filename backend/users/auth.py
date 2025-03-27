@@ -6,6 +6,7 @@ from django.middleware.csrf import get_token
 from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from mongoengine.errors import DoesNotExist
 
 from .models import User
 
@@ -29,7 +30,7 @@ class MongoEngineBackend(BaseBackend):
         """
         try:
             return User.objects.get(id=user_id)
-        except (User.DoesNotExist, ValueError):
+        except (DoesNotExist, ValueError):
             return None
 
 
@@ -50,7 +51,7 @@ class MongoEngineJWTAuthentication(JWTAuthentication):
 
         try:
             user = User.objects(id=user_id).first()
-        except (ValueError, User.DoesNotExist):
+        except (ValueError, DoesNotExist):
             logger.warning(f"User not found with ID: {user_id}")
             return AnonymousUser()
 
@@ -84,7 +85,7 @@ class JWTCookieAuthentication(BaseAuthentication):
 
             # Add CSRF protection by setting a token
             get_token(request)
-            return (user, access_token)
+            return user, access_token
 
         except exceptions.AuthenticationFailed:
             return None
