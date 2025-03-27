@@ -1,0 +1,27 @@
+{% extends "rest_framework/base.html" %}
+
+{% block title %}PixelSeek API{% endblock %}
+
+{% block branding %}
+    <a class="navbar-brand" rel="nofollow" href="/">
+        PixelSeek API
+    </a>
+{% endblock %}
+
+{% block userlinks %}
+    {% if user.is_authenticated %}
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                {{ user.username }}
+                <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'api_logout' %}?next={{ request.path }}">Log out</a></li>
+            </ul>
+        </li>
+    {% else %}
+        <li><a href="{% url 'rest_framework:login' %}?next={{ request.path }}">Log in</a></li>
+        <li><a href="{% url 'google_login' %}">Google Login</a></li>
+        <li><a href="{% url 'wechat_login' %}">WeChat Login</a></li>
+    {% endif %}
+{% endblock %} 

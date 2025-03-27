@@ -1,0 +1,24 @@
+{% extends "rest_framework/login_base.html" %}
+
+{% block title %}PixelSeek API - Login{% endblock %}
+
+{% block branding %}
+<h3 style="margin: 0 0 20px;">PixelSeek API Authentication</h3>
+{% endblock %}
+
+{% block body %}
+{{ block.super }}
+
+<div class="container" style="margin-top: 20px; text-align: center;">
+  <h4>Or sign in with</h4>
+  <div style="margin: 20px 0;">
+    <a href="{% url 'google_login' %}" class="btn btn-primary" style="margin-right: 10px;">
+      Google
+    </a>
+    <a href="{% url 'wechat_login' %}" class="btn btn-success">
+      WeChat
+    </a>
+  </div>
+</div>
+
+{% endblock %} 

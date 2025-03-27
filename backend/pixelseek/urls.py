@@ -14,16 +14,27 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import (
+    path,
+    include,
+)
+from django.views.generic import RedirectView
+from rest_framework.routers import DefaultRouter
+
+# Create a router and register API URLs
+router = DefaultRouter()
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include([
-        path('videos/', include('videos.urls')),
-        path('users/', include('users.urls')),
-        # path('payments/', include('payments.urls')),
-    ])),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+                  path('admin/', admin.site.urls),
+                  path('api-auth/', include('rest_framework.urls')),
+                  path('api/', include([
+                      path('', include(router.urls)),
+                      path('videos/', include('videos.urls')),
+                      path('users/', include('users.urls')),
+                      # path('payments/', include('payments.urls')),
+                  ])),
+                  path('', RedirectView.as_view(url='/api/', permanent=False)),
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

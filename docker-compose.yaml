@@ -77,6 +77,7 @@ services:
     volumes:
       - ./backend:/app
       - media_data:${MEDIA_ROOT}
+      - ./.env:/app/.env
     depends_on:
       - mongodb
       - weaviate

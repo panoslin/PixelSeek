@@ -69,7 +69,7 @@ ROOT_URLCONF = 'pixelseek.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -111,6 +111,7 @@ AUTHENTICATION_BACKENDS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'users.auth.MongoEngineJWTAuthentication',
+        'users.auth.JWTCookieAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -118,6 +119,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'LOGIN_URL': 'rest_framework:login',
+    'LOGOUT_URL': 'rest_framework:logout',
 }
 
 # JWT Settings
@@ -142,10 +145,12 @@ CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:
 CORS_ALLOW_CREDENTIALS = True
 
 # SSO Settings
+# Google OAuth settings
 GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '')
 GOOGLE_OAUTH_SECRET = os.environ.get('GOOGLE_OAUTH_SECRET', '')
 GOOGLE_OAUTH_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH_REDIRECT_URI', 'http://localhost:8000/api/users/auth/google/callback')
 
+# WeChat OAuth settings
 WECHAT_OAUTH_APP_ID = os.environ.get('WECHAT_OAUTH_APP_ID', '')
 WECHAT_OAUTH_SECRET = os.environ.get('WECHAT_OAUTH_SECRET', '')
 WECHAT_OAUTH_REDIRECT_URI = os.environ.get('WECHAT_OAUTH_REDIRECT_URI', 'http://localhost:8000/api/users/auth/wechat/callback')
@@ -218,8 +223,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
+            'format': '%(asctime)s - %(levelname)-8s - %(message)s',
+            'style': '%',
         },
     },
     'handlers': {
