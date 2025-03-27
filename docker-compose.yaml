@@ -18,7 +18,7 @@ services:
 
   # Weaviate vector database
   weaviate:
-    image: semitechnologies/weaviate:1.17.0
+    image: semitechnologies/weaviate:stable-v1.30-196444e
     container_name: ${CONTAINER_WEAVIATE}
     restart: always
     ports:
@@ -91,6 +91,7 @@ services:
       - MEDIA_ROOT=${MEDIA_ROOT}
       - REDIS_URL=redis://${CONTAINER_REDIS}:6379/0
       - CORS_ALLOWED_ORIGINS=${CORS_ORIGINS}
+      - CONTAINER_WEAVIATE=${CONTAINER_WEAVIATE}
     command: >
       sh -c "python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"

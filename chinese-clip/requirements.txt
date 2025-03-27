@@ -8,3 +8,4 @@ python-multipart>=0.0.5
 requests>=2.25.1
 opencv-python-headless>=4.5.5
 git+https://github.com/OFA-Sys/Chinese-CLIP.git
+weaviate-client==4.11.3

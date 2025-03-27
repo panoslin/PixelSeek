@@ -194,7 +194,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -202,8 +202,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Weaviate configuration
+CONTAINER_WEAVIATE = os.environ.get('CONTAINER_WEAVIATE', 'pixelseek-weaviate')
+WEAVIATE_PORT = os.environ.get('WEAVIATE_PORT', '8080')
 WEAVIATE_URL = os.environ.get('WEAVIATE_URL', 'http://localhost:8080')
 WEAVIATE_API_KEY = os.environ.get('WEAVIATE_API_KEY', '')
+WEAVIATE_VECTORIZER_MODULE = os.environ.get('WEAVIATE_MODULES', 'custom-chinese-clip')
+CLIP_MODEL_NAME = os.environ.get('CLIP_MODEL_NAME', 'RN50')
 
 # Celery configuration
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
