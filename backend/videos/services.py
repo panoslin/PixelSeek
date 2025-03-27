@@ -1,5 +1,8 @@
 import logging
 import os
+import traceback
+
+from mongoengine.errors import DoesNotExist
 
 from .models import (
     Video,
@@ -12,7 +15,6 @@ from .utils import (
     create_media_directories,
 )
 from .weaviate_schema import weaviate_client
-from mongoengine.errors import DoesNotExist
 
 logger = logging.getLogger(__name__)
 
@@ -52,14 +54,13 @@ class VideoProcessingService:
             )
 
             # Create keyframes directory for this video
-            if not os.path.exists(keyframes_dir):
-                os.makedirs(keyframes_dir)
+            os.makedirs(keyframes_dir, exist_ok=True)
 
             # Extract keyframes using PySceneDetect's content detector
             keyframes = extract_keyframes(
                 video.file_path,
                 keyframes_dir,
-                max_frames=15,  # Adjust as needed
+                max_frames=float('inf'),
                 method='content'  # Using content-based detection from PySceneDetect
             )
 
@@ -96,7 +97,7 @@ class VideoProcessingService:
             logger.error(f"Video with id {video_id} does not exist")
             return False
         except Exception as e:
-            logger.error(f"Error processing video {video_id}: {e}")
+            logger.error(f"Error processing video {video_id}: {traceback.format_exc()}")
 
             # Update video status to error
             try:
@@ -105,7 +106,7 @@ class VideoProcessingService:
                 video.error_message = str(e)
                 video.save()
             except:
-                pass
+                logger.error(f"Error updating video status to error for video {video_id}: {traceback.format_exc()}")
 
             return False
 

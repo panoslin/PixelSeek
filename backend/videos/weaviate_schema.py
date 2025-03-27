@@ -33,21 +33,29 @@ class WeaviateClient:
             )
 
             # Get vectorizer module configuration from settings
-            self.vectorizer_module = getattr(settings, 'WEAVIATE_VECTORIZER_MODULE', 'chinese-clip')
-            self.model_name = getattr(settings, 'CLIP_MODEL_NAME', 'RN50')
+            self.vectorizer_module = getattr(
+                settings, "WEAVIATE_VECTORIZER_MODULE", "chinese-clip"
+            )
+            self.model_name = getattr(settings, "CLIP_MODEL_NAME", "RN50")
 
             # Log the vectorizer configuration
-            logger.info(f"Using vectorizer module: {self.vectorizer_module}, model: {self.model_name}")
+            logger.info(
+                f"Using vectorizer module: {self.vectorizer_module}, model: {self.model_name}"
+            )
 
             # Verify connection
             self.ping()
-            logger.info(f"Successfully connected to Weaviate at {settings.WEAVIATE_URL}")
+            logger.info(
+                f"Successfully connected to Weaviate at {settings.WEAVIATE_URL}"
+            )
 
             # Register close method to be called on exit
             atexit.register(self.close)
 
         except Exception as e:
-            logger.warning(f"Warning: Could not connect to Weaviate: {traceback.format_exc()}")
+            logger.warning(
+                f"Warning: Could not connect to Weaviate: {traceback.format_exc()}"
+            )
             # Initialize client as None to handle graceful failures
             self.client = None
 
@@ -77,7 +85,7 @@ class WeaviateClient:
         Initialize the Weaviate collections for PixelSeek.
         Creates necessary collections for video content and search.
         Uses Chinese-CLIP vectorizer module for handling images and text.
-        
+
         Returns:
             bool: Success status
         """
@@ -86,13 +94,12 @@ class WeaviateClient:
                 return False
 
             # Check existing collections
-            existing_collections = [col.name for col in self.client.collections.get_all()]
+            existing_collections = [
+                col.name for col in self.client.collections.get_all()
+            ]
 
             # Configure module settings based on environment variables
-            module_config = {
-                "imageFields": ["thumbnail"],
-                "model":       self.model_name
-            }
+            module_config = {"imageFields": ["thumbnail"], "model": self.model_name}
 
             # Define Video collection with Chinese-CLIP vectorizer config
             if "Video" not in existing_collections:
@@ -101,76 +108,76 @@ class WeaviateClient:
                     description=f"Video content with {self.vectorizer_module} embeddings for search",
                     properties=[
                         {
-                            "name":            "title",
-                            "description":     "The title of the video",
-                            "dataType":        ["text"],
+                            "name": "title",
+                            "description": "The title of the video",
+                            "dataType": ["text"],
                             "indexFilterable": True,
                             "indexSearchable": True,
-                            "tokenization":    "field"
+                            "tokenization": "field",
                         },
                         {
-                            "name":            "description",
-                            "description":     "The description of the video",
-                            "dataType":        ["text"],
+                            "name": "description",
+                            "description": "The description of the video",
+                            "dataType": ["text"],
                             "indexFilterable": True,
                             "indexSearchable": True,
-                            "tokenization":    "field"
+                            "tokenization": "field",
                         },
                         {
-                            "name":            "tags",
-                            "description":     "Tags associated with the video",
-                            "dataType":        ["text[]"],
+                            "name": "tags",
+                            "description": "Tags associated with the video",
+                            "dataType": ["text[]"],
                             "indexFilterable": True,
-                            "indexSearchable": True
+                            "indexSearchable": True,
                         },
                         {
-                            "name":            "colors",
-                            "description":     "Dominant colors in the video (hex values)",
-                            "dataType":        ["text[]"],
-                            "indexFilterable": True
-                        },
-                        {
-                            "name":            "mongodb_id",
-                            "description":     "Reference to MongoDB ObjectId",
-                            "dataType":        ["text"],
+                            "name": "colors",
+                            "description": "Dominant colors in the video (hex values)",
+                            "dataType": ["text[]"],
                             "indexFilterable": True,
-                            "indexSearchable": True
                         },
                         {
-                            "name":            "owner_id",
-                            "description":     "Reference to the owner in MongoDB",
-                            "dataType":        ["text"],
-                            "indexFilterable": True
+                            "name": "mongodb_id",
+                            "description": "Reference to MongoDB ObjectId",
+                            "dataType": ["text"],
+                            "indexFilterable": True,
+                            "indexSearchable": True,
                         },
                         {
-                            "name":        "thumbnail",
+                            "name": "owner_id",
+                            "description": "Reference to the owner in MongoDB",
+                            "dataType": ["text"],
+                            "indexFilterable": True,
+                        },
+                        {
+                            "name": "thumbnail",
                             "description": "The thumbnail image of the video",
-                            "dataType":    ["blob"]
+                            "dataType": ["blob"],
                         },
                         {
-                            "name":            "access_level",
-                            "description":     "Access level for permissions",
-                            "dataType":        ["text"],
-                            "indexFilterable": True
-                        }
+                            "name": "access_level",
+                            "description": "Access level for permissions",
+                            "dataType": ["text"],
+                            "indexFilterable": True,
+                        },
                     ],
                     vector_index_config=Configure.VectorIndex.hnsw(
                         distance_metric=Configure.VectorIndex.Distance.COSINE
                     ),
                     # Configure to use module vectorizer based on environment settings
                     vectorizer_config=Configure.Vectorizer.module(
-                        module_name=self.vectorizer_module,
-                        module_config=module_config
-                    )
+                        module_name=self.vectorizer_module, module_config=module_config
+                    ),
                 )
                 logger.info(
                     f"Created Video collection in Weaviate with {self.vectorizer_module} vectorizer using model "
-                    f"{self.model_name}")
+                    f"{self.model_name}"
+                )
 
             # Configure module settings for keyframes
             keyframe_module_config = {
                 "imageFields": ["image"],
-                "model":       self.model_name
+                "model": self.model_name,
             }
 
             # Define Keyframe collection with Chinese-CLIP vectorizer config
@@ -180,40 +187,40 @@ class WeaviateClient:
                     description=f"Keyframe images extracted from videos with {self.vectorizer_module} embeddings",
                     properties=[
                         {
-                            "name":        "image",
+                            "name": "image",
                             "description": "The keyframe image",
-                            "dataType":    ["blob"]
+                            "dataType": ["blob"],
                         },
                         {
-                            "name":            "timestamp",
-                            "description":     "Timestamp in the video (seconds)",
-                            "dataType":        ["number"],
-                            "indexFilterable": True
+                            "name": "timestamp",
+                            "description": "Timestamp in the video (seconds)",
+                            "dataType": ["number"],
+                            "indexFilterable": True,
                         },
                         {
-                            "name":            "index",
-                            "description":     "Position in the sequence of keyframes",
-                            "dataType":        ["int"],
-                            "indexFilterable": True
+                            "name": "index",
+                            "description": "Position in the sequence of keyframes",
+                            "dataType": ["int"],
+                            "indexFilterable": True,
                         },
                         {
-                            "name":            "video_id",
-                            "description":     "Reference to the Weaviate Video UUID",
-                            "dataType":        ["text"],
-                            "indexFilterable": True
+                            "name": "video_id",
+                            "description": "Reference to the Weaviate Video UUID",
+                            "dataType": ["text"],
+                            "indexFilterable": True,
                         },
                         {
-                            "name":            "mongodb_id",
-                            "description":     "Reference to MongoDB ObjectId of the video",
-                            "dataType":        ["text"],
-                            "indexFilterable": True
+                            "name": "mongodb_id",
+                            "description": "Reference to MongoDB ObjectId of the video",
+                            "dataType": ["text"],
+                            "indexFilterable": True,
                         },
                         {
-                            "name":            "access_level",
-                            "description":     "Inherited access level from the video",
-                            "dataType":        ["text"],
-                            "indexFilterable": True
-                        }
+                            "name": "access_level",
+                            "description": "Inherited access level from the video",
+                            "dataType": ["text"],
+                            "indexFilterable": True,
+                        },
                     ],
                     vector_index_config=Configure.VectorIndex.hnsw(
                         distance_metric=Configure.VectorIndex.Distance.COSINE
@@ -221,12 +228,13 @@ class WeaviateClient:
                     # Configure to use module vectorizer based on environment settings
                     vectorizer_config=Configure.Vectorizer.module(
                         module_name=self.vectorizer_module,
-                        module_config=keyframe_module_config
-                    )
+                        module_config=keyframe_module_config,
+                    ),
                 )
                 logger.info(
                     f"Created Keyframe collection in Weaviate with {self.vectorizer_module} vectorizer using model "
-                    f"{self.model_name}")
+                    f"{self.model_name}"
+                )
 
             # Define ColorSearch collection
             if "ColorSearch" not in existing_collections:
@@ -235,33 +243,33 @@ class WeaviateClient:
                     description="Color-based search for videos",
                     properties=[
                         {
-                            "name":            "color",
-                            "description":     "Hex color code",
-                            "dataType":        ["text"],
-                            "indexFilterable": True
+                            "name": "color",
+                            "description": "Hex color code",
+                            "dataType": ["text"],
+                            "indexFilterable": True,
                         },
                         {
-                            "name":            "percentage",
-                            "description":     "Percentage of the color in the image",
-                            "dataType":        ["number"],
-                            "indexFilterable": True
+                            "name": "percentage",
+                            "description": "Percentage of the color in the image",
+                            "dataType": ["number"],
+                            "indexFilterable": True,
                         },
                         {
-                            "name":            "video_id",
-                            "description":     "Reference to the Weaviate Video UUID",
-                            "dataType":        ["text"],
-                            "indexFilterable": True
+                            "name": "video_id",
+                            "description": "Reference to the Weaviate Video UUID",
+                            "dataType": ["text"],
+                            "indexFilterable": True,
                         },
                         {
-                            "name":            "mongodb_id",
-                            "description":     "Reference to MongoDB ObjectId",
-                            "dataType":        ["text"],
-                            "indexFilterable": True
-                        }
+                            "name": "mongodb_id",
+                            "description": "Reference to MongoDB ObjectId",
+                            "dataType": ["text"],
+                            "indexFilterable": True,
+                        },
                     ],
                     vector_index_config=Configure.VectorIndex.hnsw(
                         distance_metric=Configure.VectorIndex.Distance.COSINE
-                    )
+                    ),
                     # Note: No vectorizer config for ColorSearch as we provide RGB vectors directly
                 )
                 logger.info("Created ColorSearch collection in Weaviate")
@@ -275,7 +283,7 @@ class WeaviateClient:
     def initialize(self) -> bool:
         """
         Initialize the Weaviate connection and schema.
-        
+
         Returns:
             bool: Success status
         """
@@ -291,12 +299,20 @@ class WeaviateClient:
             logger.error(f"Error initializing Weaviate: {e}")
             return False
 
-    def add_video(self, mongodb_id: str, thumbnail_data: bytes, title: str,
-        description: str, tags: List[str], colors: List[str],
-        owner_id: str, access_level: str) -> Optional[str]:
+    def add_video(
+        self,
+        mongodb_id: str,
+        thumbnail_data: bytes,
+        title: str,
+        description: str,
+        tags: List[str],
+        colors: List[str],
+        owner_id: str,
+        access_level: str,
+    ) -> Optional[str]:
         """
         Add a video to Weaviate with its embedding using the configured vectorizer.
-        
+
         Args:
             mongodb_id: The MongoDB ObjectId as string
             thumbnail_data: Binary data of the thumbnail image
@@ -306,7 +322,7 @@ class WeaviateClient:
             colors: List of dominant color hex codes
             owner_id: User ID of the owner
             access_level: Access level for permissions
-            
+
         Returns:
             str: UUID of the created object in Weaviate or None if failed
         """
@@ -324,15 +340,15 @@ class WeaviateClient:
             video_collection.data.insert(
                 uuid=object_uuid,
                 properties={
-                    "mongodb_id":   mongodb_id,
-                    "title":        title,
-                    "description":  description,
-                    "tags":         tags,
-                    "colors":       colors,
-                    "owner_id":     owner_id,
+                    "mongodb_id": mongodb_id,
+                    "title": title,
+                    "description": description,
+                    "tags": tags,
+                    "colors": colors,
+                    "owner_id": owner_id,
                     "access_level": access_level,
-                    "thumbnail":    thumbnail_data  # Used by the vectorizer module
-                }
+                    "thumbnail": thumbnail_data,  # Used by the vectorizer module
+                },
                 # No explicit vector needed; Module will generate from thumbnail
             )
 
@@ -342,12 +358,18 @@ class WeaviateClient:
             logger.error(f"Error adding video to Weaviate: {e}")
             return None
 
-    def add_keyframe(self, mongodb_id: str, video_weaviate_id: str,
-        keyframe_data: bytes, timestamp: float,
-        index: int, access_level: str) -> Optional[str]:
+    def add_keyframe(
+        self,
+        mongodb_id: str,
+        video_weaviate_id: str,
+        keyframe_data: bytes,
+        timestamp: float,
+        index: int,
+        access_level: str,
+    ) -> Optional[str]:
         """
         Add a keyframe from a video to Weaviate with its embedding using the configured vectorizer.
-        
+
         Args:
             mongodb_id: The MongoDB ObjectId of the video as string
             video_weaviate_id: Weaviate UUID of the parent video
@@ -355,7 +377,7 @@ class WeaviateClient:
             timestamp: Timestamp in the video (seconds)
             index: Position in the sequence of keyframes
             access_level: Access level inherited from the video
-            
+
         Returns:
             str: UUID of the created keyframe object in Weaviate or None if failed
         """
@@ -373,13 +395,13 @@ class WeaviateClient:
             keyframe_collection.data.insert(
                 uuid=object_uuid,
                 properties={
-                    "mongodb_id":   mongodb_id,
-                    "video_id":     video_weaviate_id,
-                    "timestamp":    timestamp,
-                    "index":        index,
+                    "mongodb_id": mongodb_id,
+                    "video_id": video_weaviate_id,
+                    "timestamp": timestamp,
+                    "index": index,
                     "access_level": access_level,
-                    "image":        keyframe_data  # Used by the vectorizer module
-                }
+                    "image": keyframe_data,  # Used by the vectorizer module
+                },
                 # No explicit vector needed; Module will generate from image
             )
 
@@ -389,19 +411,24 @@ class WeaviateClient:
             logger.error(f"Error adding keyframe to Weaviate: {e}")
             return None
 
-    def add_color_reference(self, mongodb_id: str, video_id: str,
-        color_hex: str, percentage: float,
-        rgb_vector: List[float]) -> Optional[str]:
+    def add_color_reference(
+        self,
+        mongodb_id: str,
+        video_id: str,
+        color_hex: str,
+        percentage: float,
+        rgb_vector: List[float],
+    ) -> Optional[str]:
         """
         Add a color reference for a video.
-        
+
         Args:
             mongodb_id: The MongoDB ObjectId of the video
             video_id: Weaviate UUID of the video
             color_hex: Hex color code
             percentage: Percentage of the color in the image
             rgb_vector: RGB vector (normalized to [0,1])
-            
+
         Returns:
             str: UUID of the created color object or None if failed
         """
@@ -420,12 +447,12 @@ class WeaviateClient:
                 uuid=object_uuid,
                 properties={
                     "mongodb_id": mongodb_id,
-                    "video_id":   video_id,
-                    "color":      color_hex,
-                    "percentage": percentage
+                    "video_id": video_id,
+                    "color": color_hex,
+                    "percentage": percentage,
                 },
                 # Set the vector directly from RGB values
-                vector=rgb_vector
+                vector=rgb_vector,
             )
 
             return object_uuid
@@ -434,18 +461,19 @@ class WeaviateClient:
             logger.error(f"Error adding color to Weaviate: {e}")
             return None
 
-    def search_by_image(self, image_data: bytes, limit: int = 20,
-        offset: int = 0, filters: Dict = None) -> List[Dict]:
+    def search_by_image(
+        self, image_data: bytes, limit: int = 20, offset: int = 0, filters: Dict = None
+    ) -> List[Dict]:
         """
         Search for videos using an image as query.
         The vector is created using the configured vectorizer module.
-        
+
         Args:
             image_data: Binary data of the query image
             limit: Maximum number of results
             offset: Pagination offset
             filters: Additional filters to apply
-            
+
         Returns:
             List of search results
         """
@@ -462,7 +490,7 @@ class WeaviateClient:
                 media_content=image_data,
                 media_encoded=True,
                 limit=limit,
-                offset=offset
+                offset=offset,
             )
 
             # Add filters if provided
@@ -475,14 +503,11 @@ class WeaviateClient:
             # Format results
             return [
                 {
-                    "mongodb_id":  obj.properties.get("mongodb_id"),
-                    "title":       obj.properties.get("title"),
+                    "mongodb_id": obj.properties.get("mongodb_id"),
+                    "title": obj.properties.get("title"),
                     "description": obj.properties.get("description"),
-                    "tags":        obj.properties.get("tags", []),
-                    "_additional": {
-                        "id":       obj.uuid,
-                        "distance": obj.metadata.distance
-                    }
+                    "tags": obj.properties.get("tags", []),
+                    "_additional": {"id": obj.uuid, "distance": obj.metadata.distance},
                 }
                 for obj in result
             ]
@@ -491,18 +516,19 @@ class WeaviateClient:
             logger.error(f"Error searching by image: {e}")
             return []
 
-    def search_by_keyframe(self, image_data: bytes, limit: int = 20,
-        offset: int = 0, filters: Dict = None) -> List[Dict]:
+    def search_by_keyframe(
+        self, image_data: bytes, limit: int = 20, offset: int = 0, filters: Dict = None
+    ) -> List[Dict]:
         """
         Search for keyframes using an image as query, then return the associated videos.
         The vector is created using the configured vectorizer module.
-        
+
         Args:
             image_data: Binary data of the query image
             limit: Maximum number of results
             offset: Pagination offset
             filters: Additional filters to apply
-            
+
         Returns:
             List of search results with keyframe information
         """
@@ -518,7 +544,7 @@ class WeaviateClient:
                 media_type="image",
                 media_content=image_data,
                 media_encoded=True,
-                limit=limit * 2  # Get more results as we'll group by video
+                limit=limit * 2,  # Get more results as we'll group by video
             )
 
             # Add filters if provided
@@ -543,12 +569,14 @@ class WeaviateClient:
                     if video_id not in keyframes_by_video:
                         keyframes_by_video[video_id] = []
 
-                    keyframes_by_video[video_id].append({
-                        "timestamp": kf.properties.get("timestamp"),
-                        "index":     kf.properties.get("index"),
-                        "id":        kf.uuid,
-                        "distance":  kf.metadata.distance
-                    })
+                    keyframes_by_video[video_id].append(
+                        {
+                            "timestamp": kf.properties.get("timestamp"),
+                            "index": kf.properties.get("index"),
+                            "id": kf.uuid,
+                            "distance": kf.metadata.distance,
+                        }
+                    )
 
             # Get video details for each found keyframe
             results = []
@@ -559,16 +587,16 @@ class WeaviateClient:
                     video = video_collection.query.fetch_object_by_id(video_id)
 
                     if video:
-                        results.append({
-                            "mongodb_id":  video.properties.get("mongodb_id"),
-                            "title":       video.properties.get("title"),
-                            "description": video.properties.get("description"),
-                            "tags":        video.properties.get("tags", []),
-                            "keyframes":   keyframes_by_video.get(video_id, []),
-                            "_additional": {
-                                "id": video.uuid
+                        results.append(
+                            {
+                                "mongodb_id": video.properties.get("mongodb_id"),
+                                "title": video.properties.get("title"),
+                                "description": video.properties.get("description"),
+                                "tags": video.properties.get("tags", []),
+                                "keyframes": keyframes_by_video.get(video_id, []),
+                                "_additional": {"id": video.uuid},
                             }
-                        })
+                        )
                 except Exception as ve:
                     logger.warning(f"Error fetching video {video_id}: {ve}")
 
@@ -578,18 +606,19 @@ class WeaviateClient:
             logger.error(f"Error searching by keyframe: {e}")
             return []
 
-    def search_by_text(self, query_text: str, limit: int = 20,
-        offset: int = 0, filters: Dict = None) -> List[Dict]:
+    def search_by_text(
+        self, query_text: str, limit: int = 20, offset: int = 0, filters: Dict = None
+    ) -> List[Dict]:
         """
         Search for videos using text query.
         The vector is created using the configured vectorizer module.
-        
+
         Args:
             query_text: Text query
             limit: Maximum number of results
             offset: Pagination offset
             filters: Additional filters to apply
-            
+
         Returns:
             List of search results
         """
@@ -606,7 +635,7 @@ class WeaviateClient:
                 alpha=0.5,  # Balance between vector and keyword search
                 limit=limit,
                 offset=offset,
-                fusion_type="hybrid"  # Explicitly specify hybrid fusion type
+                fusion_type="hybrid",  # Explicitly specify hybrid fusion type
             )
 
             # Add filters if provided
@@ -619,14 +648,11 @@ class WeaviateClient:
             # Format results
             return [
                 {
-                    "mongodb_id":  obj.properties.get("mongodb_id"),
-                    "title":       obj.properties.get("title"),
+                    "mongodb_id": obj.properties.get("mongodb_id"),
+                    "title": obj.properties.get("title"),
                     "description": obj.properties.get("description"),
-                    "tags":        obj.properties.get("tags", []),
-                    "_additional": {
-                        "id":       obj.uuid,
-                        "distance": obj.metadata.distance
-                    }
+                    "tags": obj.properties.get("tags", []),
+                    "_additional": {"id": obj.uuid, "distance": obj.metadata.distance},
                 }
                 for obj in result
             ]
@@ -635,17 +661,18 @@ class WeaviateClient:
             logger.error(f"Error searching by text: {e}")
             return []
 
-    def search_by_color(self, hex_color: str, limit: int = 20,
-        offset: int = 0, filters: Dict = None) -> List[Dict]:
+    def search_by_color(
+        self, hex_color: str, limit: int = 20, offset: int = 0, filters: Dict = None
+    ) -> List[Dict]:
         """
         Search for videos by color proximity.
-        
+
         Args:
             hex_color: Hex color code (e.g., "#FF5733")
             limit: Maximum number of results
             offset: Pagination offset
             filters: Additional filters to apply
-            
+
         Returns:
             List of search results
         """
@@ -665,9 +692,7 @@ class WeaviateClient:
 
             # Build query
             query = color_collection.query.near_vector(
-                vector=vector,
-                limit=limit,
-                offset=offset
+                vector=vector, limit=limit, offset=offset
             )
 
             # Add filters if provided
@@ -689,9 +714,9 @@ class WeaviateClient:
                     try:
                         # Find videos by MongoDB ID (more reliable)
                         filter_query = {
-                            "path":      ["mongodb_id"],
-                            "operator":  "Equal",
-                            "valueText": mongodb_id
+                            "path": ["mongodb_id"],
+                            "operator": "Equal",
+                            "valueText": mongodb_id,
                         }
 
                         # Execute query with filter in v4.11.3 API
@@ -701,20 +726,24 @@ class WeaviateClient:
 
                         if videos:
                             video = videos[0]
-                            results.append({
-                                "mongodb_id":  video.properties.get("mongodb_id"),
-                                "title":       video.properties.get("title"),
-                                "description": video.properties.get("description"),
-                                "tags":        video.properties.get("tags", []),
-                                "color":       color.properties.get("color"),
-                                "percentage":  color.properties.get("percentage"),
-                                "_additional": {
-                                    "id":       video.uuid,
-                                    "distance": color.metadata.distance
+                            results.append(
+                                {
+                                    "mongodb_id": video.properties.get("mongodb_id"),
+                                    "title": video.properties.get("title"),
+                                    "description": video.properties.get("description"),
+                                    "tags": video.properties.get("tags", []),
+                                    "color": color.properties.get("color"),
+                                    "percentage": color.properties.get("percentage"),
+                                    "_additional": {
+                                        "id": video.uuid,
+                                        "distance": color.metadata.distance,
+                                    },
                                 }
-                            })
+                            )
                     except Exception as ve:
-                        logger.warning(f"Error fetching video for color {color.uuid}: {ve}")
+                        logger.warning(
+                            f"Error fetching video for color {color.uuid}: {ve}"
+                        )
 
             return results
 
@@ -725,7 +754,7 @@ class WeaviateClient:
     def ping(self) -> bool:
         """
         Check if Weaviate is responsive.
-        
+
         Returns:
             bool: True if Weaviate is ready, False otherwise
         """
@@ -756,6 +785,7 @@ if __name__ == "__main__":
         if success:
             print(
                 f"✅ Weaviate collections initialized successfully with {client.vectorizer_module} vectorizer using "
-                f"model {client.model_name}")
+                f"model {client.model_name}"
+            )
         else:
             print("❌ Failed to initialize Weaviate collections")
