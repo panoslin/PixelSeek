@@ -57,12 +57,12 @@ Other Tools:
 # 4. Frontend (React + PrimeReact)
 ###############################################################################
 1) Framework & Syntax:
-   - Use React (v18.2.0) with functional components and React Hooks.
+   - Use React (v19.0.0) with functional components and React Hooks.
    - Prefer TypeScript if possible; if using JavaScript, utilize PropTypes and/or JSDoc.
-   - Leverage PrimeReact (v8.5.0) for UI components like forms, tables, dialogs, etc.
+   - Leverage PrimeReact (v10.9.2) for UI components like forms, tables, dialogs, etc.
 
 2) State Management & Routing:
-   - Use React Router (v6.8.2) for client-side routing.
+   - Use Next.js App Router for client-side and server-side routing with built-in support for dynamic routes, layouts, and loading states.
    - Use Redux Toolkit (v1.9.3) or an equivalent library if state management becomes complex.
 
 3) Styling & Theming:
