@@ -13,3 +13,8 @@ docker compose --env-file .env.prod up -d
 # Stop containers, remove images, and remove volumes
 docker compose down --rmi all -v
 ```
+
+# Start Frontend Development Server
+```bash
+npm run dev
+```
