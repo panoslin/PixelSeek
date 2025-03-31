@@ -1,0 +1,11 @@
+/* Password component overrides */
+.password_container :global(.p-icon-field.p-icon-field-right) {
+  width: 100% !important;
+}
+
+
+
+/* Customize the checkbox box */
+:global(.pixelseek-rememberme-checkbox .p-checkbox-box[data-p-highlight="false"]) {
+  background-color: white;           /* Unchecked background */
+}
