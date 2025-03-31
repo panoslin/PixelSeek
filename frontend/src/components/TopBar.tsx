@@ -77,7 +77,7 @@ const TopBar = () => {
             </div>
 
             <div className="flex items-center gap-3">
-                <Link href="/login" className="text-white hover:underline ml-4  py-2">
+                <Link href="/auth/login" className="text-white hover:underline ml-4  py-2">
                     Login
                 </Link>
 
