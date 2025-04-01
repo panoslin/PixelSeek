@@ -3,9 +3,34 @@
   width: 100% !important;
 }
 
-
-
 /* Customize the checkbox box */
 :global(.pixelseek-rememberme-checkbox .p-checkbox-box[data-p-highlight="false"]) {
-  background-color: white;           /* Unchecked background */
+  background-color: white; /* Unchecked background */
+}
+
+/* Social login buttons */
+.socialButton {
+  background-color: #1e1e1e !important;
+  border: 1px solid #333333 !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease !important;
+  height: 44px !important;
+  font-weight: 400 !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0 1rem !important;
+}
+
+.socialButton:hover {
+  background-color: #daec46 !important;
+  color: #000000 !important;
+}
+
+/* Divider */
+.divider {
+  margin: 1.5rem 0 !important;
+}
+
+.divider :global(.p-divider-content) {
+  background-color: #1a1a1a !important;
+  padding: 0 0.5rem !important;
 }
