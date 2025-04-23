@@ -222,6 +222,10 @@ CELERY_TIMEZONE = TIME_ZONE
 MONGOENGINE_USERNAME_FIELD = 'email'
 
 # Logging Configuration
+# Create logs directory if it doesn't exist
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -239,9 +243,11 @@ LOGGING = {
         },
         'file': {
             'level': os.environ.get('LOG_LEVEL', 'INFO'),
-            'class': 'logging.FileHandler',
-            'filename': os.environ.get('LOG_FILE', '/tmp/pixelseek.log'),
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.environ.get('LOG_FILE', os.path.join(LOGS_DIR, 'pixelseek.log')),
             'formatter': 'verbose',
+            'maxBytes': 10485760,  # 10 MB
+            'backupCount': 5,
         },
     },
     'loggers': {
@@ -251,6 +257,16 @@ LOGGING = {
             'propagate': True,
         },
         'users': {
+            'handlers': ['console', 'file'],
+            'level': os.environ.get('LOG_LEVEL', 'DEBUG'),
+            'propagate': False,
+        },
+        'videos': {
+            'handlers': ['console', 'file'],
+            'level': os.environ.get('LOG_LEVEL', 'DEBUG'),
+            'propagate': False,
+        },
+        'payments': {
             'handlers': ['console', 'file'],
             'level': os.environ.get('LOG_LEVEL', 'DEBUG'),
             'propagate': False,
