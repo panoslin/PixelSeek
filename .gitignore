@@ -70,3 +70,5 @@ next-env.d.ts
 .cache/
 .next/
 out/
+
+.env

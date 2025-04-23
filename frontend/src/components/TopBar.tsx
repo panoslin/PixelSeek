@@ -9,11 +9,13 @@ import {Avatar} from "primereact/avatar";
 import {ProgressBar} from "primereact/progressbar";
 import {Menu} from "primereact/menu";
 import {MenuItem} from "primereact/menuitem";
+import {useAuth} from "@/context/AuthContext";
 
 const TopBar = () => {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState("");
     const menu = useRef<Menu>(null);
+    const {isAuthenticated, user, logout} = useAuth();
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,7 +39,7 @@ const TopBar = () => {
         {
             label: "Logout",
             icon: "pi pi-sign-out",
-            command: () => console.log("Logout clicked"),
+            command: () => logout(),
         },
     ];
 
@@ -77,36 +79,40 @@ const TopBar = () => {
             </div>
 
             <div className="flex items-center gap-3">
-                <Link href="/auth/login" className="text-white hover:underline ml-4  py-2">
-                    Login
-                </Link>
+                {!isAuthenticated ? (
+                    <Link href="/auth/login" className="text-white hover:underline ml-4 py-2">
+                        Login
+                    </Link>
+                ) : (
+                    <>
+                        <div className="relative h-7 w-40">
+                            <ProgressBar
+                                value={50}
+                                className="h-7 w-40 rounded-full absolute"
+                                style={{background: "#333333"}}
+                                showValue={false}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
+                                5/10 Searches
+                            </div>
+                        </div>
 
-                <div className="relative h-7 w-40 ">
-                    <ProgressBar
-                        value={50}
-                        className="h-7 w-40 rounded-full absolute"
-                        style={{background: "#333333"}}
-                        showValue={false}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
-                        5/10 Searches
-                    </div>
-                </div>
+                        <Avatar
+                            className="bg-gray-700"
+                            shape="circle"
+                            size="normal"
+                            image={user?.profile_image || "https://randomuser.me/api/portraits/women/32.jpg"}
+                        />
 
-                <Avatar
-                    className="bg-gray-700 "
-                    shape="circle"
-                    size="normal"
-                    image="https://randomuser.me/api/portraits/women/32.jpg"
-                />
-
-                <Menu model={userMenuItems} popup ref={menu} />
-                <Button
-                    icon="pi pi-ellipsis-v"
-                    className="p-button-rounded p-button-text text-white"
-                    onClick={(e) => menu.current?.toggle(e)}
-                    aria-label="User menu"
-                />
+                        <Menu model={userMenuItems} popup ref={menu} />
+                        <Button
+                            icon="pi pi-ellipsis-v"
+                            className="p-button-rounded p-button-text text-white"
+                            onClick={(e) => menu.current?.toggle(e)}
+                            aria-label="User menu"
+                        />
+                    </>
+                )}
             </div>
         </header>
     );
