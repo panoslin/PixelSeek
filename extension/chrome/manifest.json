@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "PixelSeek Chrome Extension",
+  "version": "1.0.0",
+  "description": "Chrome extension for PixelSeek",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+} 
